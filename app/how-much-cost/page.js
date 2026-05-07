@@ -1,5 +1,5 @@
-import AnswerPageLayout from '@/components/AnswerPageLayout'
-import Calculator from '@/components/Calculator'
+import AnswerPageLayout from '@/components/AnswerPageLayout.js'
+import Calculator from '@/components/Calculator.js'
 import Link from 'next/link'
 
 export const metadata = {

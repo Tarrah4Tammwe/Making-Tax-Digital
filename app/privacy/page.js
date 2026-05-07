@@ -1,4 +1,4 @@
-import AnswerPageLayout from '@/components/AnswerPageLayout'
+import AnswerPageLayout from '@/components/AnswerPageLayout.js'
 
 export const metadata = {
   title: 'Privacy Policy | Making Tax Digital Explained',

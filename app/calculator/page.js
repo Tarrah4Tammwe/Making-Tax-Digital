@@ -1,5 +1,5 @@
-import AnswerPageLayout from '@/components/AnswerPageLayout.js'
-import Calculator from '@/components/Calculator.js'
+import AnswerPageLayout from '../components/AnswerPageLayout.js'
+import Calculator from '../components/Calculator.js'
 
 export const metadata = {
   title: 'MTD Cost Calculator | Calculate Your Making Tax Digital Costs',

@@ -1,5 +1,5 @@
 'use client'
-import AnswerPageLayout from '@/components/AnswerPageLayout.js'
+import AnswerPageLayout from '../components/AnswerPageLayout.js'
 import { useState } from 'react'
 
 export default function PremiumChecklist() {

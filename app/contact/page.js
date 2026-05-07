@@ -1,4 +1,4 @@
-import AnswerPageLayout from '@/components/AnswerPageLayout.js'
+import AnswerPageLayout from '../components/AnswerPageLayout.js'
 
 export const metadata = {
   title: 'Contact | Making Tax Digital Explained',

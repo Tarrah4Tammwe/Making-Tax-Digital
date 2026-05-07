@@ -1,4 +1,4 @@
-import AnswerPageLayout from '@/components/AnswerPageLayout.js'
+import AnswerPageLayout from '../components/AnswerPageLayout.js'
 import Link from 'next/link'
 
 export const metadata = {

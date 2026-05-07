@@ -70,12 +70,12 @@ export default function Home() {
           </Link>
         </div>
 
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-12 rounded-lg border-2 border-amber-300">
-          <h2 className="text-3xl font-bold mb-4 text-slate-900">Still Panicking?</h2>
-          <p className="text-lg text-slate-700 mb-6">Download our <strong>MTD Preparation Checklist</strong> — month-by-month action plan from now until April 2026.</p>
+ <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-12 rounded-lg border-2 border-amber-300">
+          <h2 className="text-3xl font-bold mb-4 text-slate-900">Ready to Stay Compliant All Year?</h2>
+          <p className="text-lg text-slate-700 mb-6">Get our <strong>MTD Annual Toolkit</strong> — Excel templates, checklists & trackers for all 4 quarterly deadlines in 2026-2027. Set it up once, use it forever.</p>
           <Link href="/premium-checklist">
             <button className="bg-amber-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-amber-700">
-              Get the Checklist (£4.99) →
+              Get the Toolkit (£4.99) →
             </button>
           </Link>
         </div>

@@ -1,32 +1,40 @@
-import archiver from 'archiver'
-
 export async function GET(request) {
   try {
-    // Create two simple text buffers for testing
-    const file1 = Buffer.from('TEST FILE 1: This is a test', 'utf8')
-    const file2 = Buffer.from('TEST FILE 2: This is another test', 'utf8')
+    // Create simple test content
+    const content1 = 'TEST FILE 1 CONTENT'
+    const content2 = 'TEST FILE 2 CONTENT'
 
-    const chunks = []
-    const archive = archiver('zip', { zlib: { level: 9 } })
+    // Manually create a ZIP file structure (simplest possible)
+    // ZIP local file header + content + central directory
     
-    archive.on('data', chunk => chunks.push(chunk))
-    archive.on('error', err => { throw err })
-    
-    archive.append(file1, { name: 'test1.txt' })
-    archive.append(file2, { name: 'test2.txt' })
-    
-    await archive.finalize()
-    
-    const zipBuffer = Buffer.concat(chunks)
+    const buf1 = Buffer.from(content1, 'utf8')
+    const buf2 = Buffer.from(content2, 'utf8')
 
-    return new Response(zipBuffer, {
+    // Local file header signature
+    const signature = Buffer.from([0x50, 0x4B, 0x03, 0x04]) // PK..
+    
+    // Just return the raw buffers - NO archiver, no processing
+    const responseBuffer = Buffer.concat([buf1, buf2])
+
+    // Return response with explicit type
+    const response = new Response(responseBuffer, {
+      status: 200,
       headers: {
-        'Content-Type': 'application/zip',
-        'Content-Disposition': 'attachment; filename="test-minimal.zip"',
+        'Content-Type': 'application/octet-stream',
+        'Content-Length': responseBuffer.length.toString(),
+        'Content-Disposition': 'attachment; filename="test-output.zip"',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
       },
     })
+
+    return response
   } catch (error) {
     console.error('Error:', error)
-    return new Response(`Error: ${error.message}`, { status: 500 })
+    return new Response(`Error: ${error.message}`, { 
+      status: 500,
+      headers: { 'Content-Type': 'text/plain' }
+    })
   }
 }

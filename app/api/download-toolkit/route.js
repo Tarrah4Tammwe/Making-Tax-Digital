@@ -1,6 +1,7 @@
 // app/api/download-toolkit/route.js
 import JSZip from 'jszip'
 import puppeteer from 'puppeteer'
+import ExcelJS from 'exceljs'
 
 const htmlTemplate = (content) => `
 <!DOCTYPE html>
@@ -36,32 +37,22 @@ const htmlTemplate = (content) => `
     .checkbox { flex-shrink: 0; width: 20px; height: 20px; border: 2px solid #d1d5db; border-radius: 3px; }
     .item-text { flex: 1; }
     
-    /* Table */
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th { background: #f3f4f6; font-weight: 600; text-align: left; padding: 10px; font-size: 13px; }
-    td { padding: 10px; border-bottom: 1px solid #e5e7eb; font-size: 13px; }
-    
     /* Footer */
     .footer { background: #f9fafb; padding: 20px 30px; font-size: 12px; color: #6b7280; text-align: center; }
     .footer p { margin: 5px 0; }
     
-    /* Page break */
     @page { margin: 0; }
     @media print { body { margin: 0; } }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Header -->
     <div class="header">
       <h1>📋 MTD Preparation Checklist</h1>
       <p>Making Tax Digital Explained</p>
       <p class="header-subtitle">Your step-by-step guide to MTD compliance in 2026</p>
     </div>
-
     ${content}
-
-    <!-- Footer -->
     <div class="footer">
       <p><strong>makingtaxdigitalexplained.com</strong></p>
       <p>Information only, not tax advice. Generated on ${new Date().toLocaleDateString()}</p>
@@ -172,6 +163,309 @@ const generatePDFContent = () => {
   `).join('')
 }
 
+async function generateExcel() {
+  const workbook = new ExcelJS.Workbook()
+  workbook.creator = 'Making Tax Digital Explained'
+  workbook.created = new Date()
+
+  const colors = {
+    darkSlate: 'FF1F2937',
+    blue: 'FF2563EB',
+    green: 'FF059669',
+    purple: 'FF9333EA',
+    red: 'FFDC2626',
+    lightGray: 'FFF3F4F6',
+    lightGreen: 'FFF0FDF4',
+  }
+
+  // DASHBOARD SHEET
+  const dashboard = workbook.addWorksheet('Dashboard', { properties: { tabColor: '002060' } })
+  
+  // Title
+  dashboard.mergeCells('A1:E1')
+  const title = dashboard['A1']
+  title.value = '📊 2026/27 MTD COMPLIANCE DASHBOARD'
+  title.font = { bold: true, size: 16, color: { argb: 'FFFFFFFF' } }
+  title.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.darkSlate } }
+  title.alignment = { horizontal: 'center', vertical: 'center' }
+  dashboard.getRow(1).height = 28
+
+  // Current Status Section
+  dashboard.mergeCells('A3:E3')
+  const statusHeader = dashboard['A3']
+  statusHeader.value = 'CURRENT STATUS'
+  statusHeader.font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } }
+  statusHeader.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.blue } }
+  dashboard.getRow(3).height = 20
+
+  dashboard['A4'].value = 'Current Quarter:'
+  dashboard['B4'].value = 'Q1 2026 (6 Apr - 5 Jul)'
+  dashboard['A5'].value = 'Days Until Next Deadline:'
+  dashboard['B5'].value = { formula: '=IF(TODAY()<=DATE(2026,8,7),DATE(2026,8,7)-TODAY(),"Deadline Passed")' }
+  dashboard['A6'].value = 'Status:'
+  dashboard['B6'].value = 'IN PROGRESS'
+
+  for (let row = 4; row <= 6; row++) {
+    for (let col = 1; col <= 2; col++) {
+      const cell = dashboard.getCell(row, col)
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.lightGray } }
+      cell.alignment = { horizontal: 'left', vertical: 'center' }
+    }
+  }
+  dashboard['A4'].font = { bold: true }
+  dashboard['A5'].font = { bold: true }
+  dashboard['A6'].font = { bold: true }
+  dashboard['B6'].font = { bold: true, color: { argb: 'FFF59E0B' } }
+
+  dashboard.getColumn('A').width = 22
+  dashboard.getColumn('B').width = 28
+
+  // Quarterly Timeline
+  dashboard.mergeCells('A8:E8')
+  const timelineHeader = dashboard['A8']
+  timelineHeader.value = 'QUARTERLY DEADLINES 2026/27'
+  timelineHeader.font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } }
+  timelineHeader.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.blue } }
+  dashboard.getRow(8).height = 20
+
+  const headers = ['Quarter', 'Period', 'Deadline', 'Days Left', 'Status']
+  headers.forEach((header, idx) => {
+    const cell = dashboard.getCell(9, idx + 1)
+    cell.value = header
+    cell.font = { bold: true, size: 11, color: { argb: 'FFFFFFFF' } }
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.darkSlate } }
+    cell.alignment = { horizontal: 'center', vertical: 'center' }
+  })
+  dashboard.getRow(9).height = 18
+
+  const quarters = [
+    { q: 'Q1', period: '6 Apr - 5 Jul 2026', deadline: '7 Aug 2026', daysFormula: '=IF(TODAY()<=DATE(2026,8,7),DATE(2026,8,7)-TODAY(),"⚠")' },
+    { q: 'Q2', period: '6 Jul - 5 Oct 2026', deadline: '7 Nov 2026', daysFormula: '=IF(TODAY()<=DATE(2026,11,7),DATE(2026,11,7)-TODAY(),"⚠")' },
+    { q: 'Q3', period: '6 Oct - 5 Jan 2027', deadline: '7 Feb 2027', daysFormula: '=IF(TODAY()<=DATE(2027,2,7),DATE(2027,2,7)-TODAY(),"⚠")' },
+    { q: 'Q4', period: '6 Jan - 5 Apr 2027', deadline: '7 May 2027', daysFormula: '=IF(TODAY()<=DATE(2027,5,7),DATE(2027,5,7)-TODAY(),"⚠")' },
+  ]
+
+  quarters.forEach((q, idx) => {
+    const row = 10 + idx
+    dashboard.getCell(row, 1).value = q.q
+    dashboard.getCell(row, 2).value = q.period
+    dashboard.getCell(row, 3).value = q.deadline
+    dashboard.getCell(row, 4).value = { formula: q.daysFormula }
+    dashboard.getCell(row, 5).value = 'PENDING'
+    
+    for (let col = 1; col <= 5; col++) {
+      const cell = dashboard.getCell(row, col)
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.lightGray } }
+      cell.alignment = { horizontal: 'center', vertical: 'center', wrapText: true }
+    }
+    dashboard.getRow(row).height = 20
+  })
+
+  dashboard.getColumn('C').width = 16
+  dashboard.getColumn('D').width = 12
+  dashboard.getColumn('E').width = 12
+
+  // Income & Expense Tracker
+  dashboard.mergeCells('A15:E15')
+  const ieHeader = dashboard['A15']
+  ieHeader.value = 'INCOME & EXPENSE TRACKER (Current Quarter)'
+  ieHeader.font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } }
+  ieHeader.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.green } }
+  dashboard.getRow(15).height = 20
+
+  const ieLabels = ['', 'Amount (£)', 'vs Budget', 'Status', '']
+  ieLabels.forEach((label, idx) => {
+    const cell = dashboard.getCell(16, idx + 1)
+    cell.value = label
+    cell.font = { bold: true, size: 11, color: { argb: 'FFFFFFFF' } }
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.darkSlate } }
+    cell.alignment = { horizontal: 'center' }
+  })
+  dashboard.getRow(16).height = 18
+
+  const ieData = [
+    { label: 'Total Income', value: { formula: '=\'Record Keeper\'!B2' }, status: 'TRACKING' },
+    { label: 'Total Expenses', value: { formula: '=\'Record Keeper\'!D2' }, status: 'TRACKING' },
+    { label: 'Net Profit', value: { formula: '=B17-B18' }, status: 'CALCULATING' },
+  ]
+
+  ieData.forEach((data, idx) => {
+    const row = 17 + idx
+    dashboard.getCell(row, 1).value = data.label
+    dashboard.getCell(row, 2).value = data.value
+    dashboard.getCell(row, 3).value = '-'
+    dashboard.getCell(row, 4).value = data.status
+
+    for (let col = 1; col <= 4; col++) {
+      const cell = dashboard.getCell(row, col)
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.lightGreen } }
+      cell.alignment = { horizontal: 'center', vertical: 'center' }
+      if (col === 2) cell.numFmt = '£#,##0.00'
+      if (col === 1) cell.font = { bold: true }
+    }
+    dashboard.getRow(row).height = 18
+  })
+
+  // Action Checklist
+  dashboard.mergeCells('A21:E21')
+  const checklistHeader = dashboard['A21']
+  checklistHeader.value = 'Q1 ACTION CHECKLIST'
+  checklistHeader.font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } }
+  checklistHeader.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.purple } }
+  dashboard.getRow(21).height = 20
+
+  const checklist = [
+    '☐ Register for MTD (by 6 Apr 2026)',
+    '☐ Connect software to HMRC',
+    '☐ Set up business bank feed',
+    '☐ Log all income within 7 days',
+    '☐ Photograph & store all receipts',
+    '☐ Monthly records review (end of month)',
+    '☐ Submit Q1 update by 7 Aug 2026',
+  ]
+
+  checklist.forEach((item, idx) => {
+    const row = 22 + idx
+    dashboard.mergeCells(`A${row}:E${row}`)
+    const cell = dashboard.getCell(row, 1)
+    cell.value = item
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.lightGray } }
+    cell.alignment = { horizontal: 'left', vertical: 'center' }
+    dashboard.getRow(row).height = 16
+  })
+
+  // Quick Info
+  dashboard.mergeCells('A29:E30')
+  const info = dashboard['A29']
+  info.value = '💡 KEY INFO: First deadline is 7 August 2026 for Q1. Missing deadlines incurs 5% penalty. Update Record Keeper sheet with daily transactions.'
+  info.font = { size: 10, italic: true, color: { argb: 'FF374151' } }
+  info.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF3CD' } }
+  info.alignment = { horizontal: 'left', vertical: 'center', wrapText: true }
+  dashboard.getRow(29).height = 24
+
+  // Record Keeper
+  const records = workbook.addWorksheet('Record Keeper', { properties: { tabColor: '0070C0' } })
+  records.columns = [
+    { header: 'Date', key: 'date', width: 14 },
+    { header: 'Income (£)', key: 'income', width: 15 },
+    { header: 'Expense Category', key: 'category', width: 20 },
+    { header: 'Expense (£)', key: 'expense', width: 15 },
+    { header: 'Notes', key: 'notes', width: 30 },
+  ]
+
+  records.getRow(1).font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } }
+  records.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.blue } }
+  records.getRow(1).alignment = { horizontal: 'center', vertical: 'center' }
+  records.getRow(1).height = 20
+
+  records.addRow({ date: '01/05/2026', income: 500, category: 'Equipment', expense: 120.50, notes: 'Laptop purchase (business use)' })
+
+  // Quarterly Summary
+  const summary = workbook.addWorksheet('Quarterly Summary', { properties: { tabColor: '00B050' } })
+  summary.columns = [
+    { header: 'Category', key: 'category', width: 25 },
+    { header: 'Q1 (Apr-Jul)', key: 'q1', width: 16 },
+    { header: 'Q2 (Jul-Oct)', key: 'q2', width: 16 },
+    { header: 'Q3 (Oct-Jan)', key: 'q3', width: 16 },
+    { header: 'Q4 (Jan-Apr)', key: 'q4', width: 16 },
+  ]
+
+  summary.getRow(1).font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } }
+  summary.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.green } }
+  summary.getRow(1).alignment = { horizontal: 'center' }
+  summary.getRow(1).height = 20
+
+  summary.addRow({ category: 'Total Income' })
+  summary.addRow({ category: 'Total Expenses' })
+  summary.addRow({ category: 'Net Profit' })
+
+  summary.getCell('B4').value = { formula: '=B2-B3' }
+  summary.getCell('C4').value = { formula: '=C2-C3' }
+  summary.getCell('D4').value = { formula: '=D2-D3' }
+  summary.getCell('E4').value = { formula: '=E2-E3' }
+
+  summary.eachRow((row, rowNumber) => {
+    if (rowNumber > 1) {
+      row.eachCell((cell, colNumber) => {
+        if (colNumber > 1) {
+          cell.alignment = { horizontal: 'right' }
+          cell.numFmt = '£#,##0.00'
+        }
+        if (rowNumber === 4) {
+          cell.font = { bold: true }
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFA7F3D0' } }
+        } else {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.lightGreen } }
+        }
+      })
+    }
+  })
+
+  // Software Comparison
+  const software = workbook.addWorksheet('Software Comparison', { properties: { tabColor: '7030A0' } })
+  software.columns = [
+    { header: 'Software', key: 'name', width: 20 },
+    { header: 'Cost/Year', key: 'cost', width: 14 },
+    { header: 'Best For', key: 'best', width: 22 },
+    { header: 'Key Features', key: 'features', width: 35 },
+  ]
+
+  software.getRow(1).font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } }
+  software.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.purple } }
+  software.getRow(1).height = 20
+
+  const softwareData = [
+    { name: 'FreeAgent', cost: '~£100', best: 'UK freelancers', features: 'Bank feed, invoicing, expense tracking' },
+    { name: 'Xero', cost: '~£360', best: 'Complex needs', features: 'Multi-currency, advanced reporting' },
+    { name: 'QuickBooks', cost: '~£264', best: 'General use', features: 'Mobile app, simple interface' },
+    { name: 'Wave', cost: 'Free', best: 'Startup', features: 'Basic but functional' },
+  ]
+
+  softwareData.forEach(row => software.addRow(row))
+
+  software.eachRow((row, rowNumber) => {
+    if (rowNumber > 1) {
+      row.eachCell(cell => {
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3E8FF' } }
+        cell.alignment = { wrapText: true, vertical: 'top' }
+      })
+      software.getRow(rowNumber).height = 35
+    }
+  })
+
+  // Penalty Guide
+  const penalties = workbook.addWorksheet('Penalty Guide', { properties: { tabColor: 'C00000' } })
+  penalties.columns = [
+    { header: 'Scenario', key: 'scenario', width: 35 },
+    { header: 'Penalty', key: 'penalty', width: 30 },
+  ]
+
+  penalties.getRow(1).font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } }
+  penalties.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.red } }
+  penalties.getRow(1).height = 20
+
+  const penaltyData = [
+    { scenario: 'Miss quarterly deadline', penalty: '5% of unpaid tax' },
+    { scenario: 'Late quarterly update', penalty: 'Escalating penalties' },
+    { scenario: 'No records kept', penalty: 'Potential prosecution' },
+    { scenario: 'Deliberate failure to submit', penalty: 'Up to £3,000 per quarter' },
+  ]
+
+  penaltyData.forEach(row => penalties.addRow(row))
+
+  penalties.eachRow((row, rowNumber) => {
+    if (rowNumber > 1) {
+      row.eachCell(cell => {
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFCF2F2' } }
+        cell.alignment = { wrapText: true, vertical: 'center' }
+      })
+      penalties.getRow(rowNumber).height = 30
+    }
+  })
+
+  return await workbook.xlsx.writeBuffer()
+}
+
 export async function GET(request) {
   try {
     // Generate PDF using Puppeteer
@@ -188,180 +482,10 @@ export async function GET(request) {
     
     await browser.close()
 
-    // Generate Excel file
-    const ExcelJS = require('exceljs')
-    const workbook = new ExcelJS.Workbook()
-    workbook.creator = 'Making Tax Digital Explained'
-    workbook.created = new Date()
+    // Generate Excel
+    const excelBuffer = await generateExcel()
 
-    // Define branding colors
-    const colors = {
-      darkSlate: 'FF1F2937',
-      blue: 'FF2563EB',
-      green: 'FF059669',
-      purple: 'FF9333EA',
-      red: 'FFDC2626',
-    }
-
-    // Sheet 1: Dashboard
-    const dashboard = workbook.addWorksheet('Dashboard', { properties: { tabColor: '002060' } })
-    dashboard.columns = [
-      { header: 'Q1 2026', key: 'q1', width: 22 },
-      { header: 'Q2 2026', key: 'q2', width: 22 },
-      { header: 'Q3 2026/27', key: 'q3', width: 22 },
-      { header: 'Q4 2026/27', key: 'q4', width: 22 },
-    ]
-    
-    // Header row
-    dashboard.getRow(1).values = ['Q1 2026', 'Q2 2026', 'Q3 2026/27', 'Q4 2026/27']
-    dashboard.getRow(1).font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } }
-    dashboard.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.darkSlate } }
-    dashboard.getRow(1).alignment = { horizontal: 'center', vertical: 'middle' }
-    dashboard.getRow(1).height = 25
-
-    // Data rows
-    dashboard.addRow({ q1: 'Deadline: 7 Aug 2026', q2: 'Deadline: 7 Nov 2026', q3: 'Deadline: 7 Feb 2027', q4: 'Deadline: 7 May 2027' })
-    dashboard.addRow({ q1: 'Period: 6 Apr - 5 Jul', q2: 'Period: 6 Jul - 5 Oct', q3: 'Period: 6 Oct - 5 Jan', q4: 'Period: 6 Jan - 5 Apr' })
-    
-    dashboard.eachRow((row, rowNumber) => {
-      if (rowNumber > 1) {
-        row.font = { size: 11, color: { argb: 'FF374151' } }
-        row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } }
-        row.alignment = { horizontal: 'center', vertical: 'center', wrapText: true }
-        row.height = 30
-      }
-    })
-
-    // Sheet 2: Record Keeper
-    const records = workbook.addWorksheet('Record Keeper', { properties: { tabColor: '0070C0' } })
-    records.columns = [
-      { header: 'Date', key: 'date', width: 14 },
-      { header: 'Income (£)', key: 'income', width: 15 },
-      { header: 'Expense Category', key: 'category', width: 20 },
-      { header: 'Expense (£)', key: 'expense', width: 15 },
-      { header: 'Notes', key: 'notes', width: 30 },
-    ]
-
-    records.getRow(1).font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } }
-    records.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.blue } }
-    records.getRow(1).alignment = { horizontal: 'center', vertical: 'middle' }
-    records.getRow(1).height = 20
-
-    records.addRow({
-      date: '01/05/2026',
-      income: 500,
-      category: 'Equipment',
-      expense: 120.50,
-      notes: 'Laptop purchase (business use)',
-    })
-
-    // Sheet 3: Quarterly Summary with FORMULAS
-    const summary = workbook.addWorksheet('Quarterly Summary', { properties: { tabColor: '00B050' } })
-    summary.columns = [
-      { header: 'Category', key: 'category', width: 25 },
-      { header: 'Q1 (Apr-Jul)', key: 'q1', width: 16 },
-      { header: 'Q2 (Jul-Oct)', key: 'q2', width: 16 },
-      { header: 'Q3 (Oct-Jan)', key: 'q3', width: 16 },
-      { header: 'Q4 (Jan-Apr)', key: 'q4', width: 16 },
-    ]
-
-    summary.getRow(1).font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } }
-    summary.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.green } }
-    summary.getRow(1).alignment = { horizontal: 'center' }
-    summary.getRow(1).height = 20
-
-    summary.addRow({ category: 'Total Income' })
-    summary.addRow({ category: 'Total Expenses' })
-    summary.addRow({ category: 'Net Profit' })
-
-    // Add formulas to Net Profit row
-    summary.getCell('B4').value = '=B2-B3'
-    summary.getCell('C4').value = '=C2-C3'
-    summary.getCell('D4').value = '=D2-D3'
-    summary.getCell('E4').value = '=E2-E3'
-
-    summary.eachRow((row, rowNumber) => {
-      if (rowNumber > 1) {
-        row.font = { size: 11 }
-        row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0FDF4' } }
-        if (rowNumber === 4) {
-          row.font = { ...row.font, bold: true }
-          row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFA7F3D0' } }
-        }
-      }
-      row.eachCell((cell, colNumber) => {
-        if (colNumber > 1) {
-          cell.alignment = { horizontal: 'right' }
-          if (cell.value && typeof cell.value === 'number') {
-            cell.numFmt = '£#,##0.00'
-          }
-        }
-      })
-    })
-
-    // Sheet 4: Software Comparison
-    const software = workbook.addWorksheet('Software Comparison', { properties: { tabColor: '7030A0' } })
-    software.columns = [
-      { header: 'Software', key: 'name', width: 20 },
-      { header: 'Cost/Year', key: 'cost', width: 14 },
-      { header: 'Best For', key: 'best', width: 22 },
-      { header: 'Key Features', key: 'features', width: 35 },
-    ]
-
-    software.getRow(1).font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } }
-    software.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.purple } }
-    software.getRow(1).height = 20
-
-    const softwareData = [
-      { name: 'FreeAgent', cost: '~£100', best: 'UK freelancers', features: 'Bank feed, invoicing, expense tracking' },
-      { name: 'Xero', cost: '~£360', best: 'Complex needs', features: 'Multi-currency, advanced reporting' },
-      { name: 'QuickBooks', cost: '~£264', best: 'General use', features: 'Mobile app, simple interface' },
-      { name: 'Wave', cost: 'Free', best: 'Startup', features: 'Basic but functional' },
-    ]
-
-    softwareData.forEach(row => software.addRow(row))
-
-    software.eachRow((row, rowNumber) => {
-      if (rowNumber > 1) {
-        row.font = { size: 11 }
-        row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3E8FF' } }
-        row.alignment = { wrapText: true, vertical: 'top' }
-        row.height = 35
-      }
-    })
-
-    // Sheet 5: Penalty Guide
-    const penalties = workbook.addWorksheet('Penalty Guide', { properties: { tabColor: 'C00000' } })
-    penalties.columns = [
-      { header: 'Scenario', key: 'scenario', width: 35 },
-      { header: 'Penalty', key: 'penalty', width: 30 },
-    ]
-
-    penalties.getRow(1).font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } }
-    penalties.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.red } }
-    penalties.getRow(1).height = 20
-
-    const penaltyData = [
-      { scenario: 'Miss quarterly deadline', penalty: '5% of unpaid tax' },
-      { scenario: 'Late quarterly update', penalty: 'Escalating penalties' },
-      { scenario: 'No records kept', penalty: 'Potential prosecution' },
-      { scenario: 'Deliberate failure to submit', penalty: 'Up to £3,000 per quarter' },
-    ]
-
-    penaltyData.forEach(row => penalties.addRow(row))
-
-    penalties.eachRow((row, rowNumber) => {
-      if (rowNumber > 1) {
-        row.font = { size: 11 }
-        row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFCF2F2' } }
-        row.alignment = { wrapText: true, vertical: 'center' }
-        row.height = 30
-      }
-    })
-
-    const excelBuffer = await workbook.xlsx.writeBuffer()
-
-    // Create ZIP with both files
+    // Create ZIP
     const zip = new JSZip()
     zip.file('MTD-Annual-Toolkit-2026.xlsx', excelBuffer)
     zip.file('MTD-Preparation-Checklist.pdf', pdfBuffer)

@@ -1,7 +1,14 @@
 // app/api/download-toolkit/route.js
-import JSZip from 'jszip'
+import { execSync } from 'child_process'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import puppeteer from 'puppeteer'
 import ExcelJS from 'exceljs'
+import archiver from 'archiver'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const htmlTemplate = (content) => `
 <!DOCTYPE html>
@@ -181,7 +188,6 @@ async function generateExcel() {
   // DASHBOARD SHEET
   const dashboard = workbook.addWorksheet('Dashboard', { properties: { tabColor: '002060' } })
   
-  // Title
   dashboard.mergeCells('A1:E1')
   const title = dashboard['A1']
   title.value = '📊 2026/27 MTD COMPLIANCE DASHBOARD'
@@ -190,7 +196,6 @@ async function generateExcel() {
   title.alignment = { horizontal: 'center', vertical: 'center' }
   dashboard.getRow(1).height = 28
 
-  // Current Status Section
   dashboard.mergeCells('A3:E3')
   const statusHeader = dashboard['A3']
   statusHeader.value = 'CURRENT STATUS'
@@ -220,7 +225,6 @@ async function generateExcel() {
   dashboard.getColumn('A').width = 22
   dashboard.getColumn('B').width = 28
 
-  // Quarterly Timeline
   dashboard.mergeCells('A8:E8')
   const timelineHeader = dashboard['A8']
   timelineHeader.value = 'QUARTERLY DEADLINES 2026/27'
@@ -265,7 +269,6 @@ async function generateExcel() {
   dashboard.getColumn('D').width = 12
   dashboard.getColumn('E').width = 12
 
-  // Income & Expense Tracker
   dashboard.mergeCells('A15:E15')
   const ieHeader = dashboard['A15']
   ieHeader.value = 'INCOME & EXPENSE TRACKER (Current Quarter)'
@@ -306,7 +309,6 @@ async function generateExcel() {
     dashboard.getRow(row).height = 18
   })
 
-  // Action Checklist
   dashboard.mergeCells('A21:E21')
   const checklistHeader = dashboard['A21']
   checklistHeader.value = 'Q1 ACTION CHECKLIST'
@@ -334,7 +336,6 @@ async function generateExcel() {
     dashboard.getRow(row).height = 16
   })
 
-  // Quick Info
   dashboard.mergeCells('A29:E30')
   const info = dashboard['A29']
   info.value = '💡 KEY INFO: First deadline is 7 August 2026 for Q1. Missing deadlines incurs 5% penalty. Update Record Keeper sheet with daily transactions.'
@@ -468,8 +469,8 @@ async function generateExcel() {
 
 export async function GET(request) {
   try {
-    // Generate PDF using Puppeteer
-    const browser = await puppeteer.launch()
+    // Generate PDF
+    const browser = await puppeteer.launch({ args: ['--no-sandbox'] })
     const page = await browser.newPage()
     
     const htmlContent = htmlTemplate(generatePDFContent())
@@ -485,21 +486,33 @@ export async function GET(request) {
     // Generate Excel
     const excelBuffer = await generateExcel()
 
-    // Create ZIP
-    const zip = new JSZip()
-    zip.file('MTD-Annual-Toolkit-2026.xlsx', excelBuffer)
-    zip.file('MTD-Preparation-Checklist.pdf', pdfBuffer)
-
-    const zipBuffer = await zip.generateAsync({ type: 'nodebuffer' })
+    // Create ZIP using archiver (more reliable than JSZip for server-side)
+    const { Readable } = await import('stream')
+    const chunks = []
+    
+    const archive = archiver('zip', { zlib: { level: 9 } })
+    
+    archive.on('data', chunk => chunks.push(chunk))
+    
+    archive.append(excelBuffer, { name: 'MTD-Annual-Toolkit-2026.xlsx' })
+    archive.append(pdfBuffer, { name: 'MTD-Preparation-Checklist.pdf' })
+    
+    await archive.finalize()
+    
+    const zipBuffer = Buffer.concat(chunks)
 
     return new Response(zipBuffer, {
       headers: {
         'Content-Type': 'application/zip',
         'Content-Disposition': 'attachment; filename="MTD-Annual-Toolkit-2026.zip"',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
       },
     })
   } catch (error) {
     console.error('Toolkit generation error:', error)
-    return new Response(JSON.stringify({ error: error.message || 'Failed to generate toolkit' }), { status: 500 })
+    return new Response(JSON.stringify({ error: error.message || 'Failed to generate toolkit' }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    })
   }
 }

@@ -14,7 +14,8 @@
     "react-dom": "^18.3.0",
     "stripe": "^16.0.0",
     "jspdf": "^2.5.0",
-    "exceljs": "^4.3.0"
+    "exceljs": "^4.3.0",
+    "jszip": "^3.10.1"
   },
   "devDependencies": {
     "typescript": "^5.8.2",

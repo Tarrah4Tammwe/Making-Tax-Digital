@@ -8,8 +8,7 @@ function SuccessContent() {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('session_id')
   const [status, setStatus] = useState('loading') // loading | valid | invalid
-  const [excelLoading, setExcelLoading] = useState(false)
-  const [pdfLoading, setPdfLoading] = useState(false)
+  const [downloading, setDownloading] = useState(false)
 
   useEffect(() => {
     if (!sessionId) {
@@ -30,43 +29,24 @@ function SuccessContent() {
       .catch(() => setStatus('invalid'))
   }, [sessionId])
 
-  const handleDownloadExcel = async () => {
-    setExcelLoading(true)
+  const handleDownload = async () => {
+    setDownloading(true)
     try {
-      const response = await fetch('/api/download-excel')
+      const response = await fetch('/api/download-toolkit')
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = 'MTD-Annual-Toolkit-2026.xlsx'
+      a.download = 'MTD-Annual-Toolkit-2026.zip'
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
     } catch (err) {
-      alert('Excel download failed. Please try again.')
+      alert('Download failed. Please try again.')
+      console.error(err)
     } finally {
-      setExcelLoading(false)
-    }
-  }
-
-  const handleDownloadPDF = async () => {
-    setPdfLoading(true)
-    try {
-      const response = await fetch('/api/download-pdf')
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'MTD-Preparation-Checklist.pdf'
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
-    } catch (err) {
-      alert('PDF download failed. Please try again.')
-    } finally {
-      setPdfLoading(false)
+      setDownloading(false)
     }
   }
 
@@ -146,31 +126,19 @@ function SuccessContent() {
           </div>
         </div>
 
-        {/* Download Buttons */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {/* Excel Button */}
-          <button
-            onClick={handleDownloadExcel}
-            disabled={excelLoading}
-            className="bg-green-600 text-white px-8 py-6 rounded-lg font-bold text-lg hover:bg-green-700 disabled:opacity-60 transition flex flex-col items-center gap-2"
-          >
-            <span className="text-3xl">📊</span>
-            {excelLoading ? 'Generating Excel…' : '⬇ Download Excel Toolkit'}
-          </button>
-
-          {/* PDF Button */}
-          <button
-            onClick={handleDownloadPDF}
-            disabled={pdfLoading}
-            className="bg-blue-600 text-white px-8 py-6 rounded-lg font-bold text-lg hover:bg-blue-700 disabled:opacity-60 transition flex flex-col items-center gap-2"
-          >
-            <span className="text-3xl">📋</span>
-            {pdfLoading ? 'Generating PDF…' : '⬇ Download PDF Checklist'}
-          </button>
-        </div>
+        {/* Download Button */}
+        <button
+          onClick={handleDownload}
+          disabled={downloading}
+          className="w-full bg-green-600 text-white px-10 py-6 rounded-lg font-bold text-xl hover:bg-green-700 disabled:opacity-60 transition flex items-center justify-center gap-3 mb-8"
+        >
+          <span className="text-3xl">⬇</span>
+          {downloading ? 'Preparing your download…' : 'Download Your Toolkit (ZIP)'}
+        </button>
 
         {/* Footer Info */}
         <p className="text-sm text-slate-600 text-center">
+          Your toolkit includes both Excel spreadsheet and PDF checklist. 
           Access is saved in this browser. If you clear your browser data,{' '}
           <a href="mailto:hello@makingtaxdigitalexplained.com" className="text-blue-600">
             contact us

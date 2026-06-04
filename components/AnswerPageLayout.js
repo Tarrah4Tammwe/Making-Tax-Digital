@@ -1,4 +1,5 @@
 'use client'
+import AdUnit from './AdUnit'
 
 export default function AnswerPageLayout({ h1, children }) {
   return (
@@ -12,6 +13,9 @@ export default function AnswerPageLayout({ h1, children }) {
         <article className="prose prose-lg max-w-4xl mb-12">
           {children}
         </article>
+        <div className="mt-8 mb-4">
+          <AdUnit slot="9571238459" format="auto" />
+        </div>
       </div>
     </>
   )

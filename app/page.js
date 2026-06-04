@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import AdUnit from '@/components/AdUnit'
 
 export default function Home() {
   return (
@@ -93,6 +94,9 @@ export default function Home() {
           </Link>
         </div>
       </section>
+      <div className="mt-8 mb-4">
+        <AdUnit slot="2572172105" format="horizontal" />
+      </div>
     </div>
   )
 }

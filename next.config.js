@@ -31,36 +31,6 @@ const nextConfig = {
       },
     ];
   },
-
-  redirects: async () => {
-    return [
-      // Remove www
-      {
-        source: '/:path*',
-        destination: 'https://makingtaxdigitalexplained.com/:path*',
-        permanent: true,
-        has: [
-          {
-            type: 'host',
-            value: 'www.makingtaxdigitalexplained.com',
-          },
-        ],
-      },
-      // Force HTTPS
-      {
-        source: '/:path*',
-        destination: 'https://makingtaxdigitalexplained.com/:path*',
-        permanent: true,
-        has: [
-          {
-            type: 'header',
-            key: 'x-forwarded-proto',
-            value: 'http',
-          },
-        ],
-      },
-    ];
-  },
 };
 
 module.exports = nextConfig;

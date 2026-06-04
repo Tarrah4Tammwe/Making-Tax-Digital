@@ -2,6 +2,7 @@ import AnswerPageLayout from '@/components/AnswerPageLayout.js'
 import Link from 'next/link'
 
 export const metadata = {
+  alternates: { canonical: 'https://makingtaxdigitalexplained.com/mtd-amendments' },
   title: 'MTD Amendments | Can I Correct a Quarterly Update?',
   description: 'How to correct or amend a Making Tax Digital quarterly update after you\'ve submitted it. What the rules are.',
 }

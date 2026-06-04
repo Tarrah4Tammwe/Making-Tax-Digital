@@ -2,6 +2,7 @@ import AnswerPageLayout from '@/components/AnswerPageLayout.js'
 import Link from 'next/link'
 
 export const metadata = {
+  alternates: { canonical: 'https://makingtaxdigitalexplained.com/voluntary-mtd' },
   title: 'Voluntary MTD | Can I Join Making Tax Digital Early?',
   description: 'Can you voluntarily sign up for Making Tax Digital before it\'s mandatory? The benefits and how to do it.',
 }

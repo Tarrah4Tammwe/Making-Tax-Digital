@@ -2,6 +2,7 @@ import AnswerPageLayout from '@/components/AnswerPageLayout.js'
 import Link from 'next/link'
 
 export const metadata = {
+  alternates: { canonical: 'https://makingtaxdigitalexplained.com/director-mtd' },
   title: 'Directors & Making Tax Digital | Does MTD Apply to Company Directors?',
   description: 'Does Making Tax Digital apply to limited company directors? The answer depends on whether you also have self-employed income.',
 }

@@ -2,6 +2,7 @@ import AnswerPageLayout from '@/components/AnswerPageLayout.js'
 import Link from 'next/link'
 
 export const metadata = {
+  alternates: { canonical: 'https://makingtaxdigitalexplained.com/what-records' },
   title: 'What Records Do I Need for Making Tax Digital?',
   description: 'Exactly what records you need to keep for MTD. Income records, expense records, and how long to keep them.',
 }

@@ -2,6 +2,7 @@ import AnswerPageLayout from '@/components/AnswerPageLayout.js'
 import Link from 'next/link'
 
 export const metadata = {
+  alternates: { canonical: 'https://makingtaxdigitalexplained.com/what-is-mtd' },
   title: 'What is Making Tax Digital? | Plain English Guide',
   description: 'Making Tax Digital explained in plain English. What it is, why HMRC is doing it, and what you actually have to do.',
 }

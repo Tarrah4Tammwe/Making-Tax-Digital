@@ -2,6 +2,7 @@ import AnswerPageLayout from '@/components/AnswerPageLayout.js'
 import Link from 'next/link'
 
 export const metadata = {
+  alternates: { canonical: 'https://makingtaxdigitalexplained.com/mtd-penalties' },
   title: 'MTD Penalties & Fines | What Happens If You Miss a Deadline',
   description: 'The MTD penalty points system explained. How fines work, how much they are, and how to avoid them.',
 }

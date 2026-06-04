@@ -2,6 +2,7 @@ import AnswerPageLayout from '@/components/AnswerPageLayout.js'
 import Link from 'next/link'
 
 export const metadata = {
+  alternates: { canonical: 'https://makingtaxdigitalexplained.com/which-software' },
   title: 'Best MTD Software 2026 | Xero vs FreeAgent vs QuickBooks',
   description: 'Compare Xero, FreeAgent, QuickBooks, and Wave for MTD. Find the right software for your business in under 5 minutes.',
 }

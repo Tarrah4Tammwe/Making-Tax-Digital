@@ -1,6 +1,7 @@
 import AnswerPageLayout from '@/components/AnswerPageLayout.js'
 
 export const metadata = {
+  alternates: { canonical: 'https://makingtaxdigitalexplained.com/privacy' },
   title: 'Privacy Policy | Making Tax Digital Explained',
   description: 'Privacy policy for Making Tax Digital Explained. We store no personal data. Payments handled by Stripe.',
 }

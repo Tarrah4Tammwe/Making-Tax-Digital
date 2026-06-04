@@ -2,6 +2,7 @@ import AnswerPageLayout from '@/components/AnswerPageLayout.js'
 import Link from 'next/link'
 
 export const metadata = {
+  alternates: { canonical: 'https://makingtaxdigitalexplained.com/limited-company-mtd' },
   title: 'Limited Companies & Making Tax Digital | Do Ltd Companies Need MTD?',
   description: 'Does Making Tax Digital apply to limited companies? The current rules and what may change in future.',
 }

@@ -2,6 +2,7 @@ import AnswerPageLayout from '@/components/AnswerPageLayout.js'
 import Link from 'next/link'
 
 export const metadata = {
+  alternates: { canonical: 'https://makingtaxdigitalexplained.com/deadlines-2026' },
   title: 'Making Tax Digital Deadlines 2026–2027 | Full Timeline',
   description: 'All MTD deadlines for 2026–2027. Quarterly updates, final return dates, and what happens if you miss them.',
 }

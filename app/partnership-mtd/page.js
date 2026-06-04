@@ -2,6 +2,7 @@ import AnswerPageLayout from '@/components/AnswerPageLayout.js'
 import Link from 'next/link'
 
 export const metadata = {
+  alternates: { canonical: 'https://makingtaxdigitalexplained.com/partnership-mtd' },
   title: 'Partnerships & Making Tax Digital | How MTD Affects Business Partners',
   description: 'How Making Tax Digital works for business partnerships. Who files, when, and what counts toward the income threshold.',
 }

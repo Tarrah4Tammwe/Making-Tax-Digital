@@ -2,6 +2,7 @@ import AnswerPageLayout from '@/components/AnswerPageLayout.js'
 import Link from 'next/link'
 
 export const metadata = {
+  alternates: { canonical: 'https://makingtaxdigitalexplained.com/employee-records' },
   title: 'Employees & Making Tax Digital | What You Need to Know',
   description: 'How MTD affects freelancers who also employ people. What records you need for employee payments under MTD.',
 }

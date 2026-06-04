@@ -3,6 +3,7 @@ import Calculator from '@/components/Calculator.js'
 import Link from 'next/link'
 
 export const metadata = {
+  alternates: { canonical: 'https://makingtaxdigitalexplained.com/how-much-cost' },
   title: 'How Much Does Making Tax Digital Cost? [Calculator]',
   description: 'Calculate your total MTD costs including software, time, and support. See actual figures for your situation.',
 }

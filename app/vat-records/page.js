@@ -2,6 +2,7 @@ import AnswerPageLayout from '@/components/AnswerPageLayout.js'
 import Link from 'next/link'
 
 export const metadata = {
+  alternates: { canonical: 'https://makingtaxdigitalexplained.com/vat-records' },
   title: 'VAT Records for Making Tax Digital | Complete Guide',
   description: 'What VAT records you need for MTD. Invoice requirements, VAT return data, and how MTD links to your VAT obligations.',
 }

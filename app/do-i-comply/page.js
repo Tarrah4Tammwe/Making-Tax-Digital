@@ -2,6 +2,7 @@ import AnswerPageLayout from '@/components/AnswerPageLayout.js'
 import Link from 'next/link'
 
 export const metadata = {
+  alternates: { canonical: 'https://makingtaxdigitalexplained.com/do-i-comply' },
   title: 'Do I Have to Comply with Making Tax Digital?',
   description: 'Check if you legally have to use Making Tax Digital. Simple yes/no answer based on your income and business type.',
 }
